@@ -1,7 +1,7 @@
 ﻿using System.Net.Sockets;
 
 
-Connect("192.168.1.77", "this is my message");
+Connect("192.168.1.77", "2");
 
 return 0;
 

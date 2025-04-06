@@ -4,9 +4,17 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
-class MyTcpListener
+public class TCPListener
 {
-    public static void Main()
+    public TCPListener(ReadAndRespondCallback callback)
+    {
+        readAndRespond = callback;
+    }
+
+    public delegate string ReadAndRespondCallback(string command);
+    ReadAndRespondCallback readAndRespond;
+
+    public int listen()
     {
         TcpListener server = null;
         try
@@ -52,9 +60,9 @@ class MyTcpListener
                     Console.WriteLine("Received: {0}", data);
 
                     // Process the data sent by the client.
-                    data = data.ToUpper();
+                    string responseMessage = readAndRespond(data);
 
-                    byte[] msg = System.Text.Encoding.ASCII.GetBytes(data);
+                    byte[] msg = System.Text.Encoding.ASCII.GetBytes(responseMessage);
 
                     // Send back a response.
                     stream.Write(msg, 0, msg.Length);
@@ -73,5 +81,7 @@ class MyTcpListener
 
         Console.WriteLine("\nHit enter to continue...");
         Console.Read();
+
+        return 0;
     }
 }
