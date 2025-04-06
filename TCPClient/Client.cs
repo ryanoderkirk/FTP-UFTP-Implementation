@@ -1,5 +1,10 @@
 ﻿using System.Net.Sockets;
 
+
+Connect("192.168.1.77", "this is my message");
+
+return 0;
+
 static void Connect(String server, String message)
 {
     try
