@@ -6,69 +6,55 @@ using System.Text;
 
 public class TCPListener
 {
-    public TCPListener(ReadAndRespondCallback callback)
+    public TCPListener(ReadAndRespondCallback callbackControl, ReadAndRespondCallback callbackData)
     {
-        readAndRespond = callback;
+        readAndRespondControl = callbackControl;
+        readAndRespondData = callbackData;
     }
 
     public delegate string ReadAndRespondCallback(string command);
-    ReadAndRespondCallback readAndRespond;
+    ReadAndRespondCallback readAndRespondControl;
+    ReadAndRespondCallback readAndRespondData;
 
-    public int listen()
+    public async Task<int> listen()
     {
-        TcpListener server = null;
+        TcpListener controlLine = null;
+        TcpListener dataLine = null;
         try
         {
-            Console.WriteLine("test");
             // Set the TcpListener on port 13000.
             Int32 port = 13000;
-            IPAddress localAddr = IPAddress.Parse("192.168.1.77");
+            IPAddress localAddr = IPAddress.Parse("192.168.1.160");
             
 
-            // TcpListener server = new TcpListener(port);
-            server = new TcpListener(localAddr, port);
+            controlLine = new TcpListener(localAddr, port);
+            dataLine = new TcpListener(localAddr, 13001);
+
 
             // Start listening for client requests.
-            server.Start();
+            controlLine.Start();
+            dataLine.Start();
 
-            // Buffer for reading data
-            Byte[] bytes = new Byte[256];
-            String data = null;
-
-            // Enter the listening loop.
-            while (true)
+            var controlLineListener = Task.Run( async () =>
             {
-                Console.Write("Waiting for a connection... ");
-
-                // Perform a blocking call to accept requests.
-                // You could also use server.AcceptSocket() here.
-                using TcpClient client = server.AcceptTcpClient();
-                Console.WriteLine("Connected!");
-
-                data = null;
-
-                // Get a stream object for reading and writing
-                NetworkStream stream = client.GetStream();
-
-                int i;
-
-                // Loop to receive all the data sent by the client.
-                while ((i = stream.Read(bytes, 0, bytes.Length)) != 0)
+                while (true)
                 {
-                    // Translate data bytes to a ASCII string.
-                    data = System.Text.Encoding.ASCII.GetString(bytes, 0, i);
-                    Console.WriteLine("Received: {0}", data);
-
-                    // Process the data sent by the client.
-                    string responseMessage = readAndRespond(data);
-
-                    byte[] msg = System.Text.Encoding.ASCII.GetBytes(responseMessage);
-
-                    // Send back a response.
-                    stream.Write(msg, 0, msg.Length);
-                    Console.WriteLine("Sent: {0}", data);
+                    Task<Task> c = controlLine.AcceptTcpClientAsync().ContinueWith(controlHandlerAsync);
+                    await c;
                 }
-            }
+            });
+
+            var dataLineListener = Task.Run(async () =>
+            {
+                while (true)
+                {
+                    Task<Task> d = dataLine.AcceptTcpClientAsync().ContinueWith(dataHandlerAsync);
+                    await d;
+                }
+            });
+
+            await controlLineListener;
+            await dataLineListener;
         }
         catch (SocketException e)
         {
@@ -76,7 +62,8 @@ public class TCPListener
         }
         finally
         {
-            server.Stop();
+            controlLine.Stop();
+            dataLine.Stop();
         }
 
         Console.WriteLine("\nHit enter to continue...");
@@ -84,4 +71,67 @@ public class TCPListener
 
         return 0;
     }
+
+    public async Task controlHandlerAsync(Task<TcpClient> controlLine)
+    {
+        Console.WriteLine("Connected control!");
+
+        Byte[] bytes = new Byte[256];
+        String data = null;
+
+
+        // Get a stream object for reading and writing
+        NetworkStream stream = controlLine.Result.GetStream();
+
+        int i;
+
+        // Loop to receive all the data sent by the client.
+        while ((i = stream.Read(bytes, 0, bytes.Length)) != 0)
+        {
+            // Translate data bytes to a ASCII string.
+            data = System.Text.Encoding.ASCII.GetString(bytes, 0, i);
+            Console.WriteLine("Received: {0}", data);
+
+            // Process the data sent by the client.
+            string responseMessage = readAndRespondControl(data);
+
+            byte[] msg = System.Text.Encoding.ASCII.GetBytes(responseMessage);
+
+            // Send back a response.
+            stream.Write(msg, 0, msg.Length);
+            Console.WriteLine("Sent: {0}", data);
+        }
+    }
+
+    public async Task dataHandlerAsync(Task<TcpClient> controlLine)
+    {
+        Console.WriteLine("Connected data!");
+
+        Byte[] bytes = new Byte[256];
+        String data = null;
+
+
+        // Get a stream object for reading and writing
+        NetworkStream stream = controlLine.Result.GetStream();
+
+        int i;
+
+        // Loop to receive all the data sent by the client.
+        while ((i = stream.Read(bytes, 0, bytes.Length)) != 0)
+        {
+            // Translate data bytes to a ASCII string.
+            data = System.Text.Encoding.ASCII.GetString(bytes, 0, i);
+            Console.WriteLine("Received: {0}", data);
+
+            // Process the data sent by the client.
+            string responseMessage = readAndRespondControl(data);
+
+            byte[] msg = System.Text.Encoding.ASCII.GetBytes(responseMessage);
+
+            // Send back a response.
+            stream.Write(msg, 0, msg.Length);
+            Console.WriteLine("Sent: {0}", data);
+        }
+    }
+
 }

@@ -1,11 +1,13 @@
 ﻿using System.Net.Sockets;
 
+Connect("192.168.1.160", "2", 13001);
+Connect("192.168.1.160", "2", 13000);
+Connect("192.168.1.160", "2", 13000);
 
-Connect("192.168.1.77", "2");
 
 return 0;
 
-static void Connect(String server, String message)
+static void Connect(String server, String message, int port)
 {
     try
     {
@@ -13,7 +15,6 @@ static void Connect(String server, String message)
         // Note, for this client to work you need to have a TcpServer
         // connected to the same address as specified by the server, port
         // combination.
-        Int32 port = 13000;
 
         // Prefer a using declaration to ensure the instance is Disposed later.
         using TcpClient client = new TcpClient(server, port);
