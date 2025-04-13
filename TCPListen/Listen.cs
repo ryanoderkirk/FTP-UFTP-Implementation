@@ -72,7 +72,7 @@ public class TCPListener
         return 0;
     }
 
-    public async Task controlHandlerAsync(Task<TcpClient> controlLine)
+    private async Task controlHandlerAsync(Task<TcpClient> controlLine)
     {
         Console.WriteLine("Connected control!");
 
@@ -103,7 +103,7 @@ public class TCPListener
         }
     }
 
-    public async Task dataHandlerAsync(Task<TcpClient> controlLine)
+    private async Task dataHandlerAsync(Task<TcpClient> controlLine)
     {
         Console.WriteLine("Connected data!");
 
