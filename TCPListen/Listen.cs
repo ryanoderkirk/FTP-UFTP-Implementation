@@ -6,11 +6,18 @@ using System.Text;
 
 public class TCPListener
 {
-    public TCPListener(ReadAndRespondCallback callbackControl, ReadAndRespondCallback callbackData)
+    public TCPListener(string ip, int controlPort, int dataPort, ReadAndRespondCallback callbackControl, ReadAndRespondCallback callbackData)
     {
+        this.ip = ip;
+        this.controlPort = controlPort;
+        this.dataPort = dataPort;
         readAndRespondControl = callbackControl;
         readAndRespondData = callbackData;
     }
+
+    private string ip;
+    int controlPort;
+    int dataPort;
 
     public delegate string ReadAndRespondCallback(string command);
     ReadAndRespondCallback readAndRespondControl;
@@ -22,13 +29,10 @@ public class TCPListener
         TcpListener dataLine = null;
         try
         {
-            // Set the TcpListener on port 13000.
-            Int32 port = 13000;
-            IPAddress localAddr = IPAddress.Parse("192.168.1.160");
-            
+            IPAddress localAddr = IPAddress.Parse(ip);            
 
-            controlLine = new TcpListener(localAddr, port);
-            dataLine = new TcpListener(localAddr, 13001);
+            controlLine = new TcpListener(localAddr, controlPort);
+            dataLine = new TcpListener(localAddr, dataPort);
 
 
             // Start listening for client requests.

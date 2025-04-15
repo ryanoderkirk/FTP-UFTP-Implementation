@@ -5,7 +5,7 @@ class Server
 {
     static async Task Main(string[] args)
     {
-        TCPListener listener = new TCPListener((string msg) => {
+        TCPListener listener = new TCPListener("1.1.1.1", 13000, 13001, (string msg) => {
             if (msg == "1")
                 return "1";
             if (msg == "2")
