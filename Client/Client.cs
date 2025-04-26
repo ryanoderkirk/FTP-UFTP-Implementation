@@ -2,7 +2,7 @@
 using System.IO;
 using System.Net.Sockets;
 
-class Server
+class Client
 {
     static int Main(string[] args)
     {
