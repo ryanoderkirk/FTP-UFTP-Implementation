@@ -68,6 +68,7 @@ class Server
         else if (command == "list")
         {
             string[] dirs = Directory.GetDirectories(Directory.GetCurrentDirectory());
+            string[] files = Directory.GetFiles(Directory.GetCurrentDirectory());
             if (dirs.Length > 0)
             {
 
@@ -75,12 +76,15 @@ class Server
                 string messageBack = "";
                 foreach (string path in dirs)
                 {
-                    messageBack += (path + "\n");
+                    messageBack += (path.Substring(Directory.GetCurrentDirectory().Length) + "\\\n");
                 }
-                Console.Write(messageBack);
+                foreach (string file in files)
+                {
+                    messageBack += (file.Substring(Directory.GetCurrentDirectory().Length) + "\n");
+                }
                 return messageBack;
             }
-            return "No Directories";
+            return "Empty Directory";
         }
 
 
