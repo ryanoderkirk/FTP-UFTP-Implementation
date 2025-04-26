@@ -16,8 +16,10 @@ class Server
         // Callback Control
         (string msg) => {
             string[] commandSections = msg.Split(' ', 2);
-            if (commandSections.Length != 2)
+            if (commandSections.Length > 2)
                 return "Incorrect Command Structure";
+            if (commandSections.Length == 1)
+                return server.handleControlLine(commandSections[0], "");
             return server.handleControlLine(commandSections[0], commandSections[1]);
 /*
             if (msg == "1")
@@ -52,6 +54,10 @@ class Server
         lastCommand = command;
         if (command == "cd")
         {
+            if(arguments == "")
+            {
+                return "error";
+            }
             Directory.SetCurrentDirectory(arguments);
             return Directory.GetCurrentDirectory();
         }
@@ -63,6 +69,10 @@ class Server
 
         else if (command == "read")
         {
+            if(arguments == "")
+            {
+                return "error";
+            }
             if (File.Exists(arguments)){
                 StreamReader fileStream = new StreamReader(arguments);
                 char[] buffer = new char[256];
