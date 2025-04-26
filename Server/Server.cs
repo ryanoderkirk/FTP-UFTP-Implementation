@@ -10,6 +10,7 @@ class Server
 
     static async Task Main(string[] args)
     {
+
         Server server = new Server();
         TCPListener listener = new TCPListener("192.168.1.240", 13000, 13001, 
         // Callback Control
@@ -37,13 +38,14 @@ class Server
             return "";
         });
 
+
         await listener.listen();
 
 
     }
 
-    public Server() { 
-        
+    public Server() {
+
     }
 
     public string handleControlLine(string command, string arguments) {
@@ -61,8 +63,16 @@ class Server
 
         else if (command == "read")
         {
-            workingFile = arguments;
-            return command;
+            if (File.Exists(arguments)){
+                StreamReader fileStream = new StreamReader(arguments);
+                char[] buffer = new char[256];
+                int charactersReadIn = 0;
+                while ((charactersReadIn = fileStream.ReadBlock(buffer, 0, 256)) != 0)
+                {
+                    Console.WriteLine(buffer, 0, 256);
+                }
+            }
+            return "Done";
         }
 
         else if (command == "list")
