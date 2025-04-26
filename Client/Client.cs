@@ -13,7 +13,7 @@ class Client
 //        sender.sendControlMessage("cd ..", ref response);
 //        sender.sendControlMessage("read AFile", ref response);
 //        sender.sendControlMessage("list UselessArg", ref response);
-        while(readIn != "exit\n")
+        while(true)
         {
             readIn = Console.ReadLine();
             if (readIn == null)
@@ -22,6 +22,8 @@ class Client
             }
             readIn.TrimEnd('\n');
             Console.Write(readIn);
+            if (readIn == "exit")
+                break;
             sender.sendControlMessage(readIn, ref response);
         }
         return 0;
