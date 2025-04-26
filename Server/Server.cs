@@ -48,12 +48,39 @@ class Server
 
     public string handleControlLine(string command, string arguments) {
         lastCommand = command;
-        if (command == "cd") {
-            return command;
+        if (command == "cd")
+        {
+            Directory.SetCurrentDirectory(arguments);
+            return Directory.GetCurrentDirectory();
         }
-        if (command == "read") {
+
+        else if(command == "pwd")
+        {
+            return Directory.GetCurrentDirectory();
+        }
+
+        else if (command == "read")
+        {
             workingFile = arguments;
             return command;
+        }
+
+        else if (command == "list")
+        {
+            string[] dirs = Directory.GetDirectories(Directory.GetCurrentDirectory());
+            if (dirs.Length > 0)
+            {
+
+
+                string messageBack = "";
+                foreach (string path in dirs)
+                {
+                    messageBack += (path + "\n");
+                }
+                Console.Write(messageBack);
+                return messageBack;
+            }
+            return "No Directories";
         }
 
 
