@@ -6,7 +6,11 @@ class Client
 {
     static int Main(string[] args)
     {
-        Sender sender = new Sender("10.185.137.42", 13000, 13001);
+        Sender sender = new Sender("192.168.1.240", 13000, 13001);
+        string response = " ";
+        sender.sendControlMessage("cd newDir",ref response);
+        sender.sendControlMessage("read AFile", ref response);
+        sender.sendControlMessage("badCommand UselessArg", ref response);
         return 0;
     }
 }
