@@ -14,7 +14,7 @@ public class Sender
     NetworkStream dataStream;
 
 
-    public delegate void dataReceived(byte[] msg);
+    public delegate void dataReceived(Byte[] msg);
     dataReceived dataBlockReceived;
 
     public Sender(string ip, int controlPort, int dataPort, dataReceived dataBlockReceived)
@@ -45,6 +45,15 @@ public class Sender
         recieveMessage = responseData;
         return 0;
     }
+    public int sendControlMessage(string sendMessage)
+    {
+        Byte[] data = System.Text.Encoding.ASCII.GetBytes(sendMessage);
+        controlStream.Write(data, 0, data.Length);
+        Console.WriteLine("Sent: {0}", sendMessage);
+        data = new Byte[256];
+        return 0;
+    }
+
     public int sendDataMessage(string sendMessage, ref string recieveMessage)
     {
         Byte[] data = System.Text.Encoding.ASCII.GetBytes(sendMessage);
