@@ -14,7 +14,7 @@ public class Sender
     NetworkStream dataStream;
 
 
-    public delegate void dataReceived(string msg);
+    public delegate void dataReceived(byte[] msg);
     dataReceived dataBlockReceived;
 
     public Sender(string ip, int controlPort, int dataPort, dataReceived dataBlockReceived)
@@ -86,7 +86,7 @@ public class Sender
                             data = System.Text.Encoding.ASCII.GetString(bytes, 0, i);
 
                             //Callback when datablock is received
-                            dataBlockReceived(data);
+                            dataBlockReceived(bytes);
                         }
                     }
                     
@@ -121,7 +121,7 @@ public class Sender
             data = System.Text.Encoding.ASCII.GetString(bytes, 0, i);
 
             //Callback when datablock is received
-            dataBlockReceived(data);
+            dataBlockReceived(bytes);
         }
 
          
