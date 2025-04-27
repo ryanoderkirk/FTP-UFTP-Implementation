@@ -24,8 +24,8 @@ public class Server
             if (commandSections.Length > 2)
                 return "Incorrect Command Structure";
             if (commandSections.Length == 1)
-                return handleControlLine(commandSections[0], "");
-            return handleControlLine(commandSections[0], commandSections[1]);
+                return handleControlLine(commandSections[0], "").Result;
+            return handleControlLine(commandSections[0], commandSections[1]).Result;
         },
         // Callback Data
         (string msg) => {
