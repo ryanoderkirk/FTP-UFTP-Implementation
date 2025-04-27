@@ -6,7 +6,9 @@ class Client
 {
     static int Main(string[] args)
     {
-        Sender sender = new Sender("192.168.1.240", 13000, 13001);
+        Sender.dataReceived callback = messageHandler;
+        
+        Sender sender = new Sender("192.168.1.161", 13000, 13001, messageHandler);
         string response = " ";
         string? readIn = "";
 //        sender.sendControlMessage("pwd newDir",ref response);
@@ -25,5 +27,10 @@ class Client
             sender.sendControlMessage(readIn, ref response);
         }
         return 0;
+    }
+
+    static void messageHandler(string msg)
+    {
+        Console.WriteLine(msg);
     }
 }
