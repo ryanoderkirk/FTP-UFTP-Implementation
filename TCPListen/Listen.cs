@@ -94,7 +94,6 @@ public class TCPListener
         Byte[] bytes = new Byte[256];
         String data = null;
 
-
         // Get a stream object for reading and writing
         controlStream = controlLine.Result.GetStream();
 

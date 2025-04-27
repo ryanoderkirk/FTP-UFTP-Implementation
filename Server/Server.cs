@@ -3,10 +3,11 @@ using System.IO;
 
 public class Server
 {
-
+    //maintain state of current command running. If read or write in process, the response to an ACK should be sending another block
     enum commandType { none, read, write};
     commandType currentCommand = commandType.none;
-    int readBytes = 0;
+    int readBlocks = 0;
+    FileStream readFileStream = null;
 
     string lastCommand = "";
     bool commandComplete = true;
@@ -45,9 +46,28 @@ public class Server
 
     public async Task<string> handleControlLine(string command, string arguments) {
         lastCommand = command;
+
+        if (currentCommand == commandType.read)
+        {
+            if (command == "ack")
+            {
+                byte[] buffer = new byte[256];
+                if(readFileStream.Read(buffer, 0, buffer.Length) == 0)
+                {
+                    currentCommand = commandType.none;
+                }
+                else
+                {
+                    await listener.sendDataMessage(buffer);
+                }
+
+                
+            }
+        }
+
         if (command == "cd")
         {
-            if(arguments == "")
+            if (arguments == "")
             {
                 return "error";
             }
@@ -67,14 +87,14 @@ public class Server
                 return "error";
             }
             if (File.Exists(arguments)){
-                FileStream fileStream = new FileStream(arguments, FileMode.Open);
+
+                currentCommand = commandType.read;
+                //send first block. wait for a received ack before sending next block
+                readFileStream = new FileStream(arguments, FileMode.Open);
                 byte[] buffer = new byte[256];
-                int charactersReadIn = 0;
-                while ((charactersReadIn = fileStream.Read(buffer, 0, 256)) != 0)
-                {
-                    Console.WriteLine(buffer.ToString());
-                    await listener.sendDataMessage(buffer);
-                }
+                readFileStream.Read(buffer, 0, buffer.Length);
+                Console.WriteLine(buffer.ToString());
+                await listener.sendDataMessage(buffer);
             }
             return "Done";
         }
