@@ -18,7 +18,7 @@ public class Server
     public async Task run()
     {
 
-        listener = new TCPListener("192.168.0.128", 13000, 13001, 
+        listener = new TCPListener("192.168.1.161", 13000, 13001, 
         // Callback Control
         (string msg) => {
             string[] commandSections = msg.Split(' ', 2);
@@ -53,11 +53,16 @@ public class Server
             {
                 byte[] buffer = new byte[256];
                 if(readFileStream.Read(buffer, 0, buffer.Length) == 0)
-                {
+                {    
                     currentCommand = commandType.none;
                 }
                 else
                 {
+                    //NEED TO RESIZE ARRAY
+                    //int resizeLength = Array.FindIndex<byte>(buffer, val => val == 0);
+                    //if(resizeLength == -1)
+                    //    resizeLength = buffer.Length;
+                    //Array.Resize<byte>(ref buffer, resizeLength);
                     await listener.sendDataMessage(buffer);
                 }
 

@@ -73,8 +73,6 @@ public class Sender
 
     public async Task<int> listen()
     {
-        TcpListener controlLine = null;
-        TcpListener dataLine = null;
         try
         {
             IPAddress localAddr = IPAddress.Parse(ip);
@@ -108,11 +106,7 @@ public class Sender
         {
             Console.WriteLine("SocketException: {0}", e);
         }
-        finally
-        {
-            controlLine.Stop();
-            dataLine.Stop();
-        }
+
         return 0;
     }
 

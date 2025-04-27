@@ -7,6 +7,7 @@ class Client
     enum commandType { none, read, write };
     static commandType currentCommand = commandType.none;
     static Sender sender = null;
+    static FileStream fileWriter = null;
 
     static int Main(string[] args)
     {
@@ -15,7 +16,7 @@ class Client
         Sender.dataReceived callback = dataMessageHandler;
         
 
-        sender = new Sender("192.168.0.128", 13000, 13001, dataMessageHandler);
+        sender = new Sender("192.168.1.161", 13000, 13001, dataMessageHandler);
         string response = " ";
         string? readIn = "";
 //        sender.sendControlMessage("pwd newDir",ref response);
@@ -32,7 +33,11 @@ class Client
             readIn.TrimEnd('\n');
             Console.Write(readIn);
             if (readIn.Split(" ")[0] == "read")
+            {
                 currentCommand = commandType.read;
+                fileWriter = new FileStream(readIn.Replace("read ", ""), FileMode.Create);
+            }
+
             sender.sendControlMessage(readIn, ref response);
         }
         return 0;
@@ -44,10 +49,22 @@ class Client
         if (currentCommand == commandType.read)
         {
             Console.WriteLine("MESSAGE: " + System.Text.Encoding.ASCII.GetString(msg, 0, msg.Length));
+            
+            //if last packet, resize array before writing all null terminators
+            
 
             //if last byte transmitted is NULL, this is the final transmission. reset currentCommandState to 0
             if (msg[msg.Length - 1] == 0)
+            {
+                Console.WriteLine("\nDONE\n");
                 currentCommand = commandType.none;
+                fileWriter.Write(msg, 0, Array.FindIndex<byte>(msg, val => val == 0));
+                fileWriter.Close();
+                
+            }
+            else
+                fileWriter.Write(msg);
+
             sender.sendControlMessage("ack");
         }
             
