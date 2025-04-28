@@ -34,11 +34,31 @@ public class TCPListener
         return 0;
     }
 
+    public async Task<int> sendDataMessage(string message)
+    {
+        byte[] data = System.Text.Encoding.ASCII.GetBytes(message);
+        if (dataStream != null && dataStream.CanWrite)
+        {
+            dataStream.Write(data, 0, data.Length);
+        }
+        return 0;
+    }
+
     public async Task<int> sendControlMessage(byte[] data)
     {
         if (dataStream != null && dataStream.CanWrite)
         {
-            dataStream.Write(data, 0, data.Length);
+            controlStream.Write(data, 0, data.Length);
+        }
+        return 0;
+    }
+
+    public async Task<int> sendControlMessage(string message)
+    {
+        byte[] data = System.Text.Encoding.ASCII.GetBytes(message);
+        if (dataStream != null && dataStream.CanWrite)
+        {
+            controlStream.Write(data, 0, data.Length);
         }
         return 0;
     }
