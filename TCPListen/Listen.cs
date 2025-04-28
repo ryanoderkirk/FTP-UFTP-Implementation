@@ -6,24 +6,29 @@ using System.Text;
 
 public class TCPListener
 {
-    public TCPListener(string ip, int controlPort, int dataPort, ReadAndRespondCallback callbackControl, ReadAndRespondCallback callbackData)
+    public TCPListener(string ip, int controlPort, int dataPort, controlReadCallback callbackControl, dataReadCallback callbackData)
     {
         this.ip = ip;
         this.controlPort = controlPort;
         this.dataPort = dataPort;
-        readAndRespondControl = callbackControl;
-        readAndRespondData = callbackData;
+        readControl = callbackControl;
+        readData = callbackData;
     }
 
+    public enum communicationType {server, client };
     private string ip;
     int controlPort;
     int dataPort;
+    private TcpClient controlClient = null;
+    private TcpClient dataClient = null;
     NetworkStream controlStream = null;
     NetworkStream dataStream = null;
 
-    public delegate void ReadAndRespondCallback(string command);
-    ReadAndRespondCallback readAndRespondControl;
-    ReadAndRespondCallback readAndRespondData;
+    public delegate void dataReadCallback(byte[] command);
+    dataReadCallback readData;
+
+    public delegate void controlReadCallback(string command);
+    controlReadCallback readControl;
 
     public async Task<int> sendDataMessage(byte[] data)
     {
@@ -58,10 +63,14 @@ public class TCPListener
         byte[] data = System.Text.Encoding.ASCII.GetBytes(message);
         if (dataStream != null && dataStream.CanWrite)
         {
+            Console.WriteLine("Sending: " + message);
+            Console.WriteLine(message.Length);
             controlStream.Write(data, 0, data.Length);
         }
         return 0;
     }
+
+
 
     public async Task<int> listen()
     {
@@ -136,7 +145,7 @@ public class TCPListener
             Console.WriteLine("Received: {0}", data);
 
             // Process the data sent by the client.
-            readAndRespondControl(data);
+            readControl(data);
         }
     }
 
@@ -161,7 +170,7 @@ public class TCPListener
             Console.WriteLine("Received: {0}", data);
 
             // Process the data sent by the client.
-            readAndRespondData(data);
+            readData(bytes);
         }
     }
 

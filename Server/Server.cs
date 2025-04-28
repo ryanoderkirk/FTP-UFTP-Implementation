@@ -22,9 +22,10 @@ public class Server
         Directory.SetCurrentDirectory(documentsPath);
 
 
-        listener = new TCPListener("10.185.137.42", 13000, 13001, 
+        listener = new TCPListener("172.31.240.1", 13000, 13001, 
         // Callback Control
         async (string msg) => {
+
             string[] commandSections = msg.Split(' ', 2);
             if (commandSections.Length > 2)
             {
@@ -42,7 +43,7 @@ public class Server
             return;
         },
         // Callback Data
-        async (string msg) => {
+        async (byte[] data) => {
             return;
         });
 
