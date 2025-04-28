@@ -23,7 +23,7 @@ class Client
 //        sender.sendControlMessage("cd ..", ref response);
 //        sender.sendControlMessage("read AFile", ref response);
 //        sender.sendControlMessage("list UselessArg", ref response);
-        while(readIn != "exit\n")
+        while(true)
         {
             readIn = Console.ReadLine();
             if (readIn == null)
@@ -32,11 +32,15 @@ class Client
             }
             readIn.TrimEnd('\n');
             Console.Write(readIn);
+
             if (readIn.Split(" ")[0] == "read")
             {
                 currentCommand = commandType.read;
                 fileWriter = new FileStream(readIn.Replace("read ", ""), FileMode.Create);
             }
+
+            if (readIn == "exit")
+                break;
 
             sender.sendControlMessage(readIn, ref response);
         }
