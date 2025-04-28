@@ -41,7 +41,6 @@ public class Server
     }
 
     public async Task<string> handleControlLine(string command, string arguments) {
-        lastCommand = command;
 
         if (currentCommand == commandType.read)
         {
