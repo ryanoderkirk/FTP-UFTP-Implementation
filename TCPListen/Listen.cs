@@ -18,10 +18,21 @@ public class TCPListener
     private string ip;
     int controlPort;
     int dataPort;
+    NetworkStream controlStream = null;
+    NetworkStream dataStream = null;
 
     public delegate string ReadAndRespondCallback(string command);
     ReadAndRespondCallback readAndRespondControl;
     ReadAndRespondCallback readAndRespondData;
+
+    public async Task<int> sendDataMessage(byte[] data)
+    {
+        if(dataStream != null && dataStream.CanWrite)
+        {
+            dataStream.Write(data, 0, data.Length);
+        }
+        return 0;
+    }
 
     public async Task<int> listen()
     {
@@ -83,14 +94,13 @@ public class TCPListener
         Byte[] bytes = new Byte[256];
         String data = null;
 
-
         // Get a stream object for reading and writing
-        NetworkStream stream = controlLine.Result.GetStream();
+        controlStream = controlLine.Result.GetStream();
 
         int i;
 
         // Loop to receive all the data sent by the client.
-        while ((i = stream.Read(bytes, 0, bytes.Length)) != 0)
+        while ((i = controlStream.Read(bytes, 0, bytes.Length)) != 0)
         {
             // Translate data bytes to a ASCII string.
             data = System.Text.Encoding.ASCII.GetString(bytes, 0, i);
@@ -102,7 +112,7 @@ public class TCPListener
             byte[] msg = System.Text.Encoding.ASCII.GetBytes(responseMessage);
 
             // Send back a response.
-            stream.Write(msg, 0, msg.Length);
+            controlStream.Write(msg, 0, msg.Length);
             Console.WriteLine("Sent: {0}", responseMessage);
         }
     }
@@ -116,12 +126,12 @@ public class TCPListener
 
 
         // Get a stream object for reading and writing
-        NetworkStream stream = controlLine.Result.GetStream();
+        dataStream = controlLine.Result.GetStream();
 
         int i;
 
         // Loop to receive all the data sent by the client.
-        while ((i = stream.Read(bytes, 0, bytes.Length)) != 0)
+        while ((i = dataStream.Read(bytes, 0, bytes.Length)) != 0)
         {
             // Translate data bytes to a ASCII string.
             data = System.Text.Encoding.ASCII.GetString(bytes, 0, i);
@@ -133,7 +143,7 @@ public class TCPListener
             byte[] msg = System.Text.Encoding.ASCII.GetBytes(responseMessage);
 
             // Send back a response.
-            stream.Write(msg, 0, msg.Length);
+            dataStream.Write(msg, 0, msg.Length);
             Console.WriteLine("Sent: {0}", responseMessage);
         }
     }
