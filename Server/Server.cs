@@ -113,22 +113,20 @@ public class Server
         {
             string[] dirs = Directory.GetDirectories(Directory.GetCurrentDirectory());
             string[] files = Directory.GetFiles(Directory.GetCurrentDirectory());
-            if (dirs.Length > 0)
+            if (dirs.Length == 0 && files.Length == 0)
             {
-
-
-                string messageBack = "";
-                foreach (string path in dirs)
-                {
-                    messageBack += (path.Substring(Directory.GetCurrentDirectory().Length) + "\\\n");
-                }
-                foreach (string file in files)
-                {
-                    messageBack += (file.Substring(Directory.GetCurrentDirectory().Length) + "\n");
-                }
-                return messageBack;
+                return "Empty Directory";
             }
-            return "Empty Directory";
+            string messageBack = "";
+            foreach (string path in dirs)
+            {
+                messageBack += (path.Substring(Directory.GetCurrentDirectory().Length) + "\\\n");
+            }
+            foreach (string file in files)
+            {
+                messageBack += (file.Substring(Directory.GetCurrentDirectory().Length) + "\n");
+            }
+            return messageBack;
         }
 
 
