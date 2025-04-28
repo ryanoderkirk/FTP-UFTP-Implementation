@@ -21,13 +21,22 @@ public class TCPListener
     NetworkStream controlStream = null;
     NetworkStream dataStream = null;
 
-    public delegate string ReadAndRespondCallback(string command);
+    public delegate void ReadAndRespondCallback(string command);
     ReadAndRespondCallback readAndRespondControl;
     ReadAndRespondCallback readAndRespondData;
 
     public async Task<int> sendDataMessage(byte[] data)
     {
         if(dataStream != null && dataStream.CanWrite)
+        {
+            dataStream.Write(data, 0, data.Length);
+        }
+        return 0;
+    }
+
+    public async Task<int> sendControlMessage(byte[] data)
+    {
+        if (dataStream != null && dataStream.CanWrite)
         {
             dataStream.Write(data, 0, data.Length);
         }
@@ -107,13 +116,7 @@ public class TCPListener
             Console.WriteLine("Received: {0}", data);
 
             // Process the data sent by the client.
-            string responseMessage = readAndRespondControl(data);
-
-            byte[] msg = System.Text.Encoding.ASCII.GetBytes(responseMessage);
-
-            // Send back a response.
-            controlStream.Write(msg, 0, msg.Length);
-            Console.WriteLine("Sent: {0}", responseMessage);
+            readAndRespondControl(data);
         }
     }
 
@@ -138,13 +141,7 @@ public class TCPListener
             Console.WriteLine("Received: {0}", data);
 
             // Process the data sent by the client.
-            string responseMessage = readAndRespondControl(data);
-
-            byte[] msg = System.Text.Encoding.ASCII.GetBytes(responseMessage);
-
-            // Send back a response.
-            dataStream.Write(msg, 0, msg.Length);
-            Console.WriteLine("Sent: {0}", responseMessage);
+            readAndRespondData(data);
         }
     }
 
