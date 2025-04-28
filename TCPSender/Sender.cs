@@ -37,10 +37,27 @@ public class Sender
         Console.WriteLine("Sent: {0}", sendMessage);
         data = new Byte[256];
         String responseData = String.Empty;
+        List<Byte> totalMessage = new List<Byte>();
+        int bytesRead = 0;
 
+        controlStream.Read(data, 0, data.Length);
+        totalMessage.AddRange(data);
+        while (controlStream.DataAvailable)
+        {
+            bytesRead = controlStream.Read(data, 0, data.Length);
+            //if bytes read is less than a full message, pad the rest with 0's
+            if (bytesRead < 256)
+            {
+                for(int i = bytesRead-1; i < data.Length; i++)
+                {
+                    data[i] = 0;
+                }
+            }
+            totalMessage.AddRange(data);
+
+        }
         // Read the first batch of the TcpServer response bytes.
-        Int32 bytes = controlStream.Read(data, 0, data.Length);
-        responseData = System.Text.Encoding.ASCII.GetString(data, 0, bytes);
+        responseData = System.Text.Encoding.ASCII.GetString(totalMessage.ToArray(), 0, totalMessage.Count);
         Console.WriteLine("Received: {0}", responseData);
         recieveMessage = responseData;
         return 0;
@@ -61,10 +78,27 @@ public class Sender
         Console.WriteLine("Sent: {0}", sendMessage);
         data = new Byte[256];
         String responseData = String.Empty;
+        List<Byte> totalMessage = new List<Byte>();
+        int bytesRead = 0;
+
+        dataStream.Read(data, 0, data.Length);
+        totalMessage.AddRange(data);
+        while (dataStream.DataAvailable)
+        {
+            bytesRead = dataStream.Read(data, 0, data.Length);
+            //if bytes read is less than a full message, pad the rest with 0's
+            if (bytesRead < 256)
+            {
+                for (int i = bytesRead - 1; i < data.Length; i++)
+                {
+                    data[i] = 0;
+                }
+            }
+            totalMessage.AddRange(data);
+        }
 
         // Read the first batch of the TcpServer response bytes.
-        Int32 bytes = dataStream.Read(data, 0, data.Length);
-        responseData = System.Text.Encoding.ASCII.GetString(data, 0, bytes);
+        responseData = System.Text.Encoding.ASCII.GetString(totalMessage.ToArray(), 0, totalMessage.Count);
         Console.WriteLine("Received: {0}", responseData);
         recieveMessage = responseData;
         return 0;
@@ -91,10 +125,9 @@ public class Sender
                         {
                             // Translate data bytes to a ASCII string.
                             data = System.Text.Encoding.ASCII.GetString(bytes, 0, i);
-
                             //Callback when datablock is received
                             dataBlockReceived(bytes);
-                        }
+                        }   
                     }
                     
                 }
