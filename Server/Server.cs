@@ -9,10 +9,6 @@ public class Server
     int readBlocks = 0;
     FileStream readFileStream = null;
 
-    string lastCommand = "";
-    bool commandComplete = true;
-    string workingFile = "";
-
     TCPListener listener = null;
 
     public async Task run()
