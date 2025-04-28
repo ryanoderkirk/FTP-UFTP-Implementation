@@ -22,7 +22,7 @@ class Client
         Sender.dataReceived callback = dataMessageHandler;
         
 
-        sender = new Sender("192.168.1.161", 13000, 13001, dataMessageHandler);
+        sender = new Sender("10.185.137.42", 13000, 13001, dataMessageHandler);
         string response = " ";
         string? readIn = "";
 //        sender.sendControlMessage("pwd newDir",ref response);
