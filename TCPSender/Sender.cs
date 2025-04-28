@@ -113,19 +113,27 @@ public class Sender
                 {
                     if (dataStream.DataAvailable)
                     {
-                        Byte[] bytes = new Byte[256];
-                        String data = null;
+                        Byte[] data = new Byte[256];
+                        List<Byte> totalMessage = new List<Byte>();
+                        int bytesRead;
 
-                        int i;
-                        while ((i = dataStream.Read(bytes, 0, bytes.Length)) != 0)
+                        dataStream.Read(data, 0, data.Length);
+                        totalMessage.AddRange(data);
+                        while (controlStream.DataAvailable)
                         {
-                            // Translate data bytes to a ASCII string.
-                            data = System.Text.Encoding.ASCII.GetString(bytes, 0, i);
-                            //Callback when datablock is received
-                            dataBlockReceived(bytes);
+                            bytesRead = dataStream.Read(data, 0, data.Length);
+                            //if bytes read is less than a full message, pad the rest with 0's
+                            if (bytesRead < 256)
+                            {
+                                for (int i = bytesRead - 1; i < data.Length; i++)
+                                {
+                                    data[i] = 0;
+                                }
+                            }
+                            totalMessage.AddRange(data);
                         }
+                        dataBlockReceived(totalMessage.ToArray());
                     }
-
                 }
             });
 
@@ -156,7 +164,6 @@ public class Sender
                         }
                         controlBlockReceived(totalMessage.ToArray());
                     }
-
                 }
             });
 

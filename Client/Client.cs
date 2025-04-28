@@ -55,10 +55,7 @@ class Client
 
         if (currentCommand == commandType.read)
         {
-            Console.WriteLine("MESSAGE: " + System.Text.Encoding.ASCII.GetString(msg, 0, msg.Length));
-            
-            //if last packet, resize array before writing all null terminators
-            
+            Console.WriteLine("MESSAGE: " + System.Text.Encoding.ASCII.GetString(msg, 0, msg.Length)); 
 
             //if last byte transmitted is NULL, this is the final transmission. reset currentCommandState to 0
             if (msg[msg.Length - 1] == 0)
