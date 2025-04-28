@@ -13,8 +13,16 @@ public class Server
 
     public async Task run()
     {
+        // sets default directory to /documents/CNProject/Server/
+        string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "/CNProject/Server";
+        if (!Directory.Exists(documentsPath))
+        {
+            Directory.CreateDirectory(documentsPath);
+        }
+        Directory.SetCurrentDirectory(documentsPath);
 
-        listener = new TCPListener("192.168.1.161", 13000, 13001, 
+
+        listener = new TCPListener("10.185.137.42", 13000, 13001, 
         // Callback Control
         (string msg) => {
             string[] commandSections = msg.Split(' ', 2);

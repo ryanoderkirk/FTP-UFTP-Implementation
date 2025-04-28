@@ -11,7 +11,13 @@ class Client
 
     static int Main(string[] args)
     {
-        
+        // sets default directory to /documents/CNProject/Server/
+        string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "/CNProject/Client";
+        if (!Directory.Exists(documentsPath))
+        {
+            Directory.CreateDirectory(documentsPath);
+        }
+        Directory.SetCurrentDirectory(documentsPath);
 
         Sender.dataReceived callback = dataMessageHandler;
         
