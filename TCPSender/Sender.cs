@@ -69,45 +69,14 @@ public class Sender
         return 0;
     }
 
-    public int sendDataMessage(string sendMessage)
+    public async Task<int> sendDataMessage(byte[] data)
     {
-        Byte[] data = System.Text.Encoding.ASCII.GetBytes(sendMessage);
-        dataStream.Write(data, 0, data.Length);
-        data = new Byte[256];
-        return 0;
-    }
-
-    public int sendDataMessage(string sendMessage, ref string recieveMessage)
-    {
-        Byte[] data = System.Text.Encoding.ASCII.GetBytes(sendMessage);
-        dataStream.Write(data, 0, data.Length);
-        data = new Byte[256];
-        String responseData = String.Empty;
-        List<Byte> totalMessage = new List<Byte>();
-        int bytesRead = 0;
-
-        dataStream.Read(data, 0, data.Length);
-        totalMessage.AddRange(data);
-        while (dataStream.DataAvailable)
+        if (dataStream != null && dataStream.CanWrite)
         {
-            bytesRead = dataStream.Read(data, 0, data.Length);
-            //if bytes read is less than a full message, pad the rest with 0's
-            if (bytesRead < 256)
-            {
-                for (int i = bytesRead - 1; i < data.Length; i++)
-                {
-                    data[i] = 0;
-                }
-            }
-            totalMessage.AddRange(data);
+            dataStream.Write(data, 0, data.Length);
         }
-
-        // Read the first batch of the TcpServer response bytes.
-        responseData = System.Text.Encoding.ASCII.GetString(totalMessage.ToArray(), 0, totalMessage.Count);
-        recieveMessage = responseData;
         return 0;
     }
-
 
     public async Task<int> listen()
     {
