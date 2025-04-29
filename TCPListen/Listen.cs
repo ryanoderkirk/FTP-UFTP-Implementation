@@ -6,24 +6,29 @@ using System.Text;
 
 public class TCPListener
 {
-    public TCPListener(string ip, int controlPort, int dataPort, ReadAndRespondCallback callbackControl, ReadAndRespondCallback callbackData)
+    public TCPListener(string ip, int controlPort, int dataPort, controlReadCallback callbackControl, dataReadCallback callbackData)
     {
         this.ip = ip;
         this.controlPort = controlPort;
         this.dataPort = dataPort;
-        readAndRespondControl = callbackControl;
-        readAndRespondData = callbackData;
+        readControl = callbackControl;
+        readData = callbackData;
     }
 
+    public enum communicationType {server, client };
     private string ip;
     int controlPort;
     int dataPort;
+    private TcpClient controlClient = null;
+    private TcpClient dataClient = null;
     NetworkStream controlStream = null;
     NetworkStream dataStream = null;
 
-    public delegate string ReadAndRespondCallback(string command);
-    ReadAndRespondCallback readAndRespondControl;
-    ReadAndRespondCallback readAndRespondData;
+    public delegate void dataReadCallback(byte[] command);
+    dataReadCallback readData;
+
+    public delegate void controlReadCallback(string command);
+    controlReadCallback readControl;
 
     public async Task<int> sendDataMessage(byte[] data)
     {
@@ -31,6 +36,49 @@ public class TCPListener
         {
             dataStream.Write(data, 0, data.Length);
         }
+        return 0;
+    }
+
+    public async Task<int> sendControlMessage(string message)
+    {
+        byte[] data = System.Text.Encoding.ASCII.GetBytes(message);
+        if (dataStream != null && dataStream.CanWrite)
+        {
+            Console.WriteLine("Sending: " + message);
+            Console.WriteLine(message.Length);
+            controlStream.Write(data, 0, data.Length);
+        }
+        return 0;
+    }
+
+    public int sendControlMessage(string sendMessage, ref string recieveMessage)
+    {
+        Byte[] data = System.Text.Encoding.ASCII.GetBytes(sendMessage);
+        controlStream.Write(data, 0, data.Length);
+        data = new Byte[256];
+        String responseData = String.Empty;
+        List<Byte> totalMessage = new List<Byte>();
+        int bytesRead = 0;
+
+        controlStream.Read(data, 0, data.Length);
+        totalMessage.AddRange(data);
+        while (controlStream.DataAvailable)
+        {
+            bytesRead = controlStream.Read(data, 0, data.Length);
+            //if bytes read is less than a full message, pad the rest with 0's
+            if (bytesRead < 256)
+            {
+                for (int i = bytesRead - 1; i < data.Length; i++)
+                {
+                    data[i] = 0;
+                }
+            }
+            totalMessage.AddRange(data);
+
+        }
+        // Read the first batch of the TcpServer response bytes.
+        responseData = System.Text.Encoding.ASCII.GetString(totalMessage.ToArray(), 0, totalMessage.Count);
+        recieveMessage = responseData;
         return 0;
     }
 
@@ -107,13 +155,7 @@ public class TCPListener
             Console.WriteLine("Received: {0}", data);
 
             // Process the data sent by the client.
-            string responseMessage = readAndRespondControl(data);
-
-            byte[] msg = System.Text.Encoding.ASCII.GetBytes(responseMessage);
-
-            // Send back a response.
-            controlStream.Write(msg, 0, msg.Length);
-            Console.WriteLine("Sent: {0}", responseMessage);
+            readControl(data);
         }
     }
 
@@ -138,13 +180,7 @@ public class TCPListener
             Console.WriteLine("Received: {0}", data);
 
             // Process the data sent by the client.
-            string responseMessage = readAndRespondControl(data);
-
-            byte[] msg = System.Text.Encoding.ASCII.GetBytes(responseMessage);
-
-            // Send back a response.
-            dataStream.Write(msg, 0, msg.Length);
-            Console.WriteLine("Sent: {0}", responseMessage);
+            readData(bytes);
         }
     }
 

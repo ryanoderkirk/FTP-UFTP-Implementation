@@ -19,16 +19,14 @@ class Client
         }
         Directory.SetCurrentDirectory(documentsPath);
 
-        Sender.dataReceived callback = dataMessageHandler;
-        
+        Sender.dataReceived dataCallback = dataMessageHandler;
+        Sender.dataReceived controlCallback = controlMessageHandler;
+        sender = new Sender("172.31.240.1", 13000, 13001, dataMessageHandler, controlMessageHandler);
+        sender.listen();
 
-        sender = new Sender("10.185.137.42", 13000, 13001, dataMessageHandler);
         string response = " ";
         string? readIn = "";
-//        sender.sendControlMessage("pwd newDir",ref response);
-//        sender.sendControlMessage("cd ..", ref response);
-//        sender.sendControlMessage("read AFile", ref response);
-//        sender.sendControlMessage("list UselessArg", ref response);
+            
         while(true)
         {
             readIn = Console.ReadLine();
@@ -37,7 +35,6 @@ class Client
                 break;
             }
             readIn.TrimEnd('\n');
-            Console.Write(readIn);
 
             if (readIn.Split(" ")[0] == "read")
             {
@@ -47,8 +44,8 @@ class Client
 
             if (readIn == "exit")
                 break;
-
-            sender.sendControlMessage(readIn, ref response);
+            
+            sender.sendControlMessage(readIn);
         }
         return 0;
     }
@@ -58,10 +55,7 @@ class Client
 
         if (currentCommand == commandType.read)
         {
-            Console.WriteLine("MESSAGE: " + System.Text.Encoding.ASCII.GetString(msg, 0, msg.Length));
-            
-            //if last packet, resize array before writing all null terminators
-            
+            Console.WriteLine("MESSAGE: " + System.Text.Encoding.ASCII.GetString(msg, 0, msg.Length)); 
 
             //if last byte transmitted is NULL, this is the final transmission. reset currentCommandState to 0
             if (msg[msg.Length - 1] == 0)
@@ -78,5 +72,10 @@ class Client
             sender.sendControlMessage("ack");
         }
             
+    }
+
+    static void controlMessageHandler(Byte[] msg)
+    {
+        Console.WriteLine(System.Text.Encoding.ASCII.GetString(msg, 0, msg.Length));
     }
 }

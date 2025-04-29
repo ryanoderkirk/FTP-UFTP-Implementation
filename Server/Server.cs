@@ -22,30 +22,32 @@ public class Server
         Directory.SetCurrentDirectory(documentsPath);
 
 
-        listener = new TCPListener("10.185.137.42", 13000, 13001, 
+        listener = new TCPListener("172.31.240.1", 13000, 13001, 
         // Callback Control
-        (string msg) => {
+        async (string msg) => {
+
             string[] commandSections = msg.Split(' ', 2);
             if (commandSections.Length > 2)
-                return "Incorrect Command Structure";
+            {
+                await listener.sendControlMessage("Incorrect Command Structure");
+                return;
+            }
+                
             if (commandSections.Length == 1)
-                return handleControlLine(commandSections[0], "").Result;
-            return handleControlLine(commandSections[0], commandSections[1]).Result;
+            {
+                await listener.sendControlMessage(handleControlLine(commandSections[0], "").Result);
+                return;
+            }
+                
+            await listener.sendControlMessage(handleControlLine(commandSections[0], commandSections[1]).Result);
+            return;
         },
         // Callback Data
-        (string msg) => {
-            if (msg == "1")
-                return "10";
-            if (msg == "2")
-                return "20";
-
-            return "";
+        async (byte[] data) => {
+            return;
         });
 
-
         await listener.listen();
-
-
     }
 
     public async Task<string> handleControlLine(string command, string arguments) {
