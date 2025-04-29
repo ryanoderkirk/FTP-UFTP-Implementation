@@ -92,25 +92,9 @@ public class Sender
                     if (dataStream.DataAvailable)
                     {
                         Byte[] data = new Byte[256];
-                        List<Byte> totalMessage = new List<Byte>();
-                        int bytesRead;
 
                         dataStream.Read(data, 0, data.Length);
-                        totalMessage.AddRange(data);
-                        while (controlStream.DataAvailable)
-                        {
-                            bytesRead = dataStream.Read(data, 0, data.Length);
-                            //if bytes read is less than a full message, pad the rest with 0's
-                            if (bytesRead < 256)
-                            {
-                                for (int i = bytesRead - 1; i < data.Length; i++)
-                                {
-                                    data[i] = 0;
-                                }
-                            }
-                            totalMessage.AddRange(data);
-                        }
-                        dataBlockReceived(totalMessage.ToArray());
+                        dataBlockReceived(data);
                     }
                 }
             });

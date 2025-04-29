@@ -57,19 +57,22 @@ public class Server
             if (command == "ack")
             {
                 byte[] buffer = new byte[256];
-                if(readFileStream.Read(buffer, 0, buffer.Length) == 0)
+                long currentPosition = readFileStream.Position;
+                int done = readFileStream.Read(buffer, 2, buffer.Length - 2);
+                long nextPosition = readFileStream.Position;
+
+                if (done == 0)
                 {    
                     currentCommand = commandType.none;
+                    Console.WriteLine("Last block reached");
+                    readFileStream.Close();
+                    return "";
                 }
-                else
-                {
-                    //NEED TO RESIZE ARRAY
-                    //int resizeLength = Array.FindIndex<byte>(buffer, val => val == 0);
-                    //if(resizeLength == -1)
-                    //    resizeLength = buffer.Length;
-                    //Array.Resize<byte>(ref buffer, resizeLength);
-                    await listener.sendDataMessage(buffer);
-                }
+
+                buffer[1] = (byte)(nextPosition - currentPosition);
+                
+                await listener.sendDataMessage(buffer);
+               
 
                 return "";
 
@@ -104,11 +107,22 @@ public class Server
                 //send first block. wait for a received ack before sending next block
                 readFileStream = new FileStream(arguments, FileMode.Open);
                 byte[] buffer = new byte[256];
-                readFileStream.Read(buffer, 0, buffer.Length);
-                Console.WriteLine(buffer.ToString());
+                long currentPosition = readFileStream.Position;
+                int done = readFileStream.Read(buffer, 2, buffer.Length - 2);
+                long nextPosition = readFileStream.Position;
+
+                //assign 2nd byte of array to hold size of the message. Leave first index alone for now
+                buffer[1] = (byte)(nextPosition - currentPosition);
+                
+                if(done == 0)
+                {
+                    currentCommand = commandType.none;
+                    readFileStream.Close();
+                }
+
                 await listener.sendDataMessage(buffer);
             }
-            return "Done";
+            return "";
         }
 
         else if (command == "list")

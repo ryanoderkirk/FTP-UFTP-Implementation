@@ -55,19 +55,16 @@ class Client
 
         if (currentCommand == commandType.read)
         {
-            Console.WriteLine("MESSAGE: " + System.Text.Encoding.ASCII.GetString(msg, 0, msg.Length)); 
-
             //if last byte transmitted is NULL, this is the final transmission. reset currentCommandState to 0
-            if (msg[msg.Length - 1] == 0)
+            if (msg[1] < 254)
             {
-                Console.WriteLine("\nDONE\n");
                 currentCommand = commandType.none;
-                fileWriter.Write(msg, 0, Array.FindIndex<byte>(msg, val => val == 0));
+                fileWriter.Write(msg, 2, msg[1]);
                 fileWriter.Close();
                 
             }
             else
-                fileWriter.Write(msg);
+                fileWriter.Write(msg, 2, msg[1]);
 
             sender.sendControlMessage("ack");
         }

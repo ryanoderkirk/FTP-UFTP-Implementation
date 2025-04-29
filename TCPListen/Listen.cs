@@ -181,6 +181,9 @@ public class TCPListener
 
             // Process the data sent by the client.
             readData(bytes);
+
+            //try clearing bytes before reading again
+            bytes = new byte[256];
         }
     }
 
