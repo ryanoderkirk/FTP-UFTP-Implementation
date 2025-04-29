@@ -61,6 +61,7 @@ public class Sender
         recieveMessage = responseData;
         return 0;
     }
+
     public int sendControlMessage(string sendMessage)
     {
         Byte[] data = System.Text.Encoding.ASCII.GetBytes(sendMessage);
