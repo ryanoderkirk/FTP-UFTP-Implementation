@@ -69,6 +69,14 @@ public class Sender
         return 0;
     }
 
+    public int sendDataMessage(string sendMessage)
+    {
+        Byte[] data = System.Text.Encoding.ASCII.GetBytes(sendMessage);
+        dataStream.Write(data, 0, data.Length);
+        data = new Byte[256];
+        return 0;
+    }
+
     public int sendDataMessage(string sendMessage, ref string recieveMessage)
     {
         Byte[] data = System.Text.Encoding.ASCII.GetBytes(sendMessage);
