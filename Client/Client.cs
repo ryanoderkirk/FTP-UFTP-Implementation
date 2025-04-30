@@ -22,11 +22,9 @@ class Client
 
         Sender.dataReceived dataCallback = dataMessageHandler;
         Sender.dataReceived controlCallback = controlMessageHandler;
-        sender = new Sender("192.168.1.240", 13000, 13001, dataMessageHandler, controlMessageHandler);
-        IPEndPoint serverEndPoint = new IPEndPoint(IPAddress.Parse("192.168.1.240"),13002);
+        sender = new Sender("10.185.137.42", 13000, 13001, dataMessageHandler, controlMessageHandler);
+        IPEndPoint serverEndPoint = new IPEndPoint(IPAddress.Parse("10.185.137.42"),13002);
         UdpClient udpClient = new UdpClient();
-        udpClient.Connect(serverEndPoint);
-        udpClient.Send(new Byte[8]);
         sender.listen();
 
         string response = " ";
@@ -59,19 +57,24 @@ class Client
 
             if (currentCommand == commandType.readUDP)
             {
+                udpClient.Connect(serverEndPoint);
+                udpClient.Send(new byte[8]);
                 fileWriter = new FileStream(readIn.Replace("read ", ""), FileMode.Create);
                 while (true)
                 {
-                    Byte[] msg = new Byte[256];
-                    msg = udpClient.Receive(ref serverEndPoint);
-                    fileWriter.Write(msg, 2, msg[1]);
-                    if (msg[1] < 254)
+                    int bytesReceived;
+                    if((bytesReceived = udpClient.Available) > 0)
                     {
-                        currentCommand = commandType.none;
-                        fileWriter.Close();
-                        break;
+                        Byte[] msg = new Byte[bytesReceived];
+                        msg = udpClient.Receive(ref serverEndPoint);
+                        fileWriter.Write(msg, 0, msg.Length);
+                        if (msg.Length != 256)
+                        {
+                            break;
+                        }
                     }
                 }
+                currentCommand = commandType.none;
                 fileWriter.Close();
             }
         }

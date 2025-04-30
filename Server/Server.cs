@@ -26,7 +26,7 @@ public class Server
         Directory.SetCurrentDirectory(documentsPath);
 
         udpDataLine = new UdpClient(13002);
-        listener = new TCPListener("192.168.1.240", 13000, 13001, 
+        listener = new TCPListener("10.185.137.42", 13000, 13001, 
         // Callback Control
         async (string msg) => {
 
@@ -140,20 +140,19 @@ public class Server
             {
                 byte[] buffer = new byte[256];
                 long currentPosition = readFileStream.Position;
-                int done = readFileStream.Read(buffer, 2, buffer.Length - 2);
+                int done = readFileStream.Read(buffer, 0, buffer.Length);
                 long nextPosition = readFileStream.Position;
 
                 if (done == 0)
                 {
                     break;
                 }
-                //assign 2nd byte of array to hold size of the message. Leave first index alone for now
-                buffer[1] = (byte)(nextPosition - currentPosition);
                 Console.WriteLine(buffer);
-                udpDataLine.Send(buffer, buffer.Length);
+                udpDataLine.Send(buffer, (int)(nextPosition-currentPosition));
             }
             currentCommand = commandType.none;
             readFileStream.Close();
+            udpDataLine.Close();
             return "";
         }
 
