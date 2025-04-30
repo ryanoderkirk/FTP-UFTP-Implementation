@@ -56,34 +56,6 @@ public class Server
 
     public async Task<string> handleControlLine(string command, string arguments) {
 
-        if (currentCommand == commandType.read)
-        {
-            if (command == "ack")
-            {
-                byte[] buffer = new byte[256];
-                long currentPosition = readFileStream.Position;
-                int done = readFileStream.Read(buffer, 2, buffer.Length - 2);
-                long nextPosition = readFileStream.Position;
-
-                if (done == 0)
-                {    
-                    currentCommand = commandType.none;
-                    Console.WriteLine("Last block reached");
-                    readFileStream.Close();
-                    return "";
-                }
-
-                buffer[1] = (byte)(nextPosition - currentPosition);
-                
-                await listener.sendDataMessage(buffer);
-               
-
-                return "";
-
-                
-            }
-        }
-
         if (command == "cd")
         {
             if (arguments == "")
@@ -108,23 +80,27 @@ public class Server
             if (File.Exists(arguments)){
 
                 currentCommand = commandType.read;
+
                 //send first block. wait for a received ack before sending next block
                 readFileStream = new FileStream(arguments, FileMode.Open);
                 byte[] buffer = new byte[256];
-                long currentPosition = readFileStream.Position;
-                int done = readFileStream.Read(buffer, 2, buffer.Length - 2);
-                long nextPosition = readFileStream.Position;
 
-                //assign 2nd byte of array to hold size of the message. Leave first index alone for now
-                buffer[1] = (byte)(nextPosition - currentPosition);
-                
-                if(done == 0)
+                long currentPosition = readFileStream.Position;
+                while (readFileStream.Read(buffer, 0, buffer.Length) != 0)
                 {
-                    currentCommand = commandType.none;
-                    readFileStream.Close();
+                    currentPosition = readFileStream.Position;
+                    await listener.sendDataMessage(buffer);
+                }
+                long bytesRemaining = readFileStream.Position - currentPosition;
+                if(bytesRemaining != 0)
+                {
+                    byte[] lastBuffer = new byte[bytesRemaining];
+                    for(int i = 0; i < bytesRemaining; i++)
+                        lastBuffer[i] = buffer[i];
+                    await listener.sendDataMessage(lastBuffer);
                 }
 
-                await listener.sendDataMessage(buffer);
+                currentCommand = commandType.none;
             }
             return "";
         }
