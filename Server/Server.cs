@@ -153,6 +153,7 @@ public class Server
             currentCommand = commandType.none;
             readFileStream.Close();
             udpDataLine.Close();
+            udpDataLine = new UdpClient(13002);
             return "";
         }
 

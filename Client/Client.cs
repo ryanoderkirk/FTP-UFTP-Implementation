@@ -76,6 +76,8 @@ class Client
                 }
                 currentCommand = commandType.none;
                 fileWriter.Close();
+                udpClient.Close();
+                udpClient = new UdpClient();
             }
         }
         return 0;
