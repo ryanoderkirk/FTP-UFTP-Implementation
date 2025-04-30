@@ -1,15 +1,19 @@
 ﻿using System;
 using System.IO;
+using System.Net;
+using System.Net.Sockets;
 
 public class Server
 {
     //maintain state of current command running. If read or write in process, the response to an ACK should be sending another block
-    enum commandType { none, read, write};
+    enum commandType { none, read, write, readUDP};
     commandType currentCommand = commandType.none;
     int readBlocks = 0;
     FileStream readFileStream = null;
 
     TCPListener listener = null;
+
+    UdpClient udpDataLine = null;
 
     public async Task run()
     {
@@ -21,8 +25,8 @@ public class Server
         }
         Directory.SetCurrentDirectory(documentsPath);
 
-
-        listener = new TCPListener("172.31.240.1", 13000, 13001, 
+        udpDataLine = new UdpClient(13002);
+        listener = new TCPListener("192.168.1.240", 13000, 13001, 
         // Callback Control
         async (string msg) => {
 
@@ -125,6 +129,34 @@ public class Server
             return "";
         }
 
+        else if (command == "readudp")
+        {
+            currentCommand = commandType.readUDP;
+            readFileStream = new FileStream(arguments, FileMode.Open);
+            IPEndPoint clientIP = null;
+            udpDataLine.Receive(ref clientIP);
+            udpDataLine.Connect(clientIP);
+            while (true)
+            {
+                byte[] buffer = new byte[256];
+                long currentPosition = readFileStream.Position;
+                int done = readFileStream.Read(buffer, 2, buffer.Length - 2);
+                long nextPosition = readFileStream.Position;
+
+                if (done == 0)
+                {
+                    break;
+                }
+                //assign 2nd byte of array to hold size of the message. Leave first index alone for now
+                buffer[1] = (byte)(nextPosition - currentPosition);
+                Console.WriteLine(buffer);
+                udpDataLine.Send(buffer, buffer.Length);
+            }
+            currentCommand = commandType.none;
+            readFileStream.Close();
+            return "";
+        }
+
         else if (command == "list")
         {
             string[] dirs = Directory.GetDirectories(Directory.GetCurrentDirectory());
@@ -147,6 +179,11 @@ public class Server
 
 
         return "unknown command";
+    }
+
+    public static void udpConnectCallback(IAsyncResult passedObj)
+    {
+        UdpClient udpClient = (UdpClient)passedObj.AsyncState;
     }
 }
 
