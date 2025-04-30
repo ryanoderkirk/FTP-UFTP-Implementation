@@ -22,7 +22,7 @@ class Client
 
         Sender.dataReceived dataCallback = dataMessageHandler;
         Sender.dataReceived controlCallback = controlMessageHandler;
-        sender = new Sender("192.168.1.240", 13000, 13001, dataMessageHandler, controlMessageHandler);
+        sender = new Sender("10.185.45.229", 13000, 13001, dataMessageHandler, controlMessageHandler);
         IPEndPoint serverEndPoint = new IPEndPoint(IPAddress.Parse("192.168.1.240"),13002);
         UdpClient udpClient = new UdpClient();
         udpClient.Connect(serverEndPoint);
@@ -83,18 +83,23 @@ class Client
 
         if (currentCommand == commandType.read)
         {
-            //if last byte transmitted is NULL, this is the final transmission. reset currentCommandState to 0
-            if (msg[1] < 254)
-            {
-                currentCommand = commandType.none;
-                fileWriter.Write(msg, 2, msg[1]);
-                fileWriter.Close();
-                
-            }
-            else
-                fileWriter.Write(msg, 2, msg[1]);
+            //while(true)
+            //{
+                //check for EOF code
+                if (msg[msg.Length - 8] == 0 && msg[msg.Length - 7] == 1 && msg[msg.Length - 6] == 0 && msg[msg.Length - 5] == 1 &&
+                    msg[msg.Length - 4] == 0 && msg[msg.Length - 3] == 1 && msg[msg.Length - 2] == 0 && msg[msg.Length - 1] == 1)
+                {
+                    fileWriter.Write(msg, 0, msg.Length - 8);
+                    currentCommand = commandType.none;
+                    fileWriter.Close();
+                    return;
+                    //break;
+                }
+                else
+                    fileWriter.Write(msg, 0, msg.Length);
+            //}
+            
 
-            sender.sendControlMessage("ack");
         }
             
     }
