@@ -22,7 +22,7 @@ class Client
 
         Sender.dataReceived dataCallback = dataMessageHandler;
         Sender.dataReceived controlCallback = controlMessageHandler;
-        sender = new Sender("10.185.45.229", 13000, 13001, dataMessageHandler, controlMessageHandler);
+        sender = new Sender("192.168.1.161", 13000, 13001, dataMessageHandler, controlMessageHandler);
         IPEndPoint serverEndPoint = new IPEndPoint(IPAddress.Parse("192.168.1.240"),13002);
         UdpClient udpClient = new UdpClient();
         udpClient.Connect(serverEndPoint);
@@ -34,6 +34,8 @@ class Client
             
         while(true)
         {
+            while(currentCommand != commandType.none)
+            { }
             readIn = Console.ReadLine();
             if (readIn == null)
             {
@@ -91,6 +93,7 @@ class Client
                 {
                     fileWriter.Write(msg, 0, msg.Length - 8);
                     currentCommand = commandType.none;
+                    Console.WriteLine("Done Reading");
                     fileWriter.Close();
                     return;
                     //break;
