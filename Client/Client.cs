@@ -67,11 +67,11 @@ class Client
                     {
                         Byte[] msg = new Byte[bytesReceived];
                         msg = udpClient.Receive(ref serverEndPoint);
-                        fileWriter.Write(msg, 0, msg.Length);
-                        if (msg.Length != 256)
+                        if (msg.Length == 8)
                         {
-                            break;
+                                break;
                         }
+                        fileWriter.Write(msg, 0, msg.Length);
                     }
                 }
                 currentCommand = commandType.none;

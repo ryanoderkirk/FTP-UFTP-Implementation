@@ -145,9 +145,10 @@ public class Server
 
                 if (done == 0)
                 {
+                    udpDataLine.Send(new byte[8], 8);
                     break;
                 }
-                Console.WriteLine(buffer);
+                Console.WriteLine(buffer.Length);
                 udpDataLine.Send(buffer, (int)(nextPosition-currentPosition));
             }
             currentCommand = commandType.none;
