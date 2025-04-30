@@ -91,10 +91,19 @@ public class Sender
                 {
                     if (dataStream.DataAvailable)
                     {
-                        Byte[] data = new Byte[256];
+                        long readLength = 256;
+                        Byte[] data = new Byte[readLength];
 
-                        dataStream.Read(data, 0, data.Length);
-                        dataBlockReceived(data);
+                        int bytesRead = dataStream.Read(data, 0, data.Length);
+                        if (bytesRead != 256)
+                        {
+                            Byte[] resizeData = new Byte[bytesRead];
+                            for (int i = 0; i < bytesRead; i++)
+                                resizeData[i] = data[i];
+                            dataBlockReceived(resizeData);
+                        }
+                        else
+                            dataBlockReceived(data);
                     }
                 }
             });

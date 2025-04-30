@@ -26,7 +26,7 @@ public class Server
         Directory.SetCurrentDirectory(documentsPath);
 
         udpDataLine = new UdpClient(13002);
-        listener = new TCPListener("192.168.1.240", 13000, 13001, 
+        listener = new TCPListener("10.185.45.229", 13000, 13001, 
         // Callback Control
         async (string msg) => {
 
@@ -85,20 +85,44 @@ public class Server
                 readFileStream = new FileStream(arguments, FileMode.Open);
                 byte[] buffer = new byte[256];
 
+                
                 long currentPosition = readFileStream.Position;
+                long previousPosition = readFileStream.Position;
+                long bytesRead = 0;
                 while (readFileStream.Read(buffer, 0, buffer.Length) != 0)
                 {
+                    previousPosition = currentPosition;
                     currentPosition = readFileStream.Position;
-                    await listener.sendDataMessage(buffer);
+                    bytesRead = currentPosition - previousPosition;
+
+                    if(bytesRead < 256)
+                    {
+                        break;
+                    }
+                    else
+                        await listener.sendDataMessage(buffer);
                 }
-                long bytesRemaining = readFileStream.Position - currentPosition;
-                if(bytesRemaining != 0)
+                
+                if(bytesRead != 0)
                 {
-                    byte[] lastBuffer = new byte[bytesRemaining];
-                    for(int i = 0; i < bytesRemaining; i++)
+                    byte[] lastBuffer = new byte[bytesRead + 8];
+                    for(int i = 0; i < bytesRead; i++)
                         lastBuffer[i] = buffer[i];
+                    //append  01010101 to end of message to identiy EOF
+                    for(int i = 0; i < 8; i++)
+                    {
+                        lastBuffer[bytesRead + i] = (byte)(i % 2);
+                    }
                     await listener.sendDataMessage(lastBuffer);
                 }
+                else
+                {
+                    byte[] endOfFileMsg = new byte[8];
+                    endOfFileMsg[0] = 0; endOfFileMsg[1] = 1; endOfFileMsg[2] = 0; endOfFileMsg[3] = 1;
+                    endOfFileMsg[4] = 0; endOfFileMsg[5] = 1; endOfFileMsg[6] = 0; endOfFileMsg[7] = 1;
+                    await listener.sendDataMessage(endOfFileMsg);
+                }
+
 
                 currentCommand = commandType.none;
             }
