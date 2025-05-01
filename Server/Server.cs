@@ -102,8 +102,9 @@ public class Server
                     else
                         await listener.sendDataMessage(buffer);
                 }
-                
-                if(bytesRead != 0)
+                readFileStream.Close();
+
+                if (bytesRead != 0)
                 {
                     byte[] lastBuffer = new byte[bytesRead + 8];
                     for(int i = 0; i < bytesRead; i++)
