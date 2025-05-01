@@ -106,11 +106,10 @@ class Client
 
         if (currentCommand == commandType.read)
         {
-            //while(true)
-            //{
-                //check for EOF code
+            if (msg.Length > 7)
+            {
                 if (msg[msg.Length - 8] == 0 && msg[msg.Length - 7] == 1 && msg[msg.Length - 6] == 0 && msg[msg.Length - 5] == 1 &&
-                    msg[msg.Length - 4] == 0 && msg[msg.Length - 3] == 1 && msg[msg.Length - 2] == 0 && msg[msg.Length - 1] == 1)
+                msg[msg.Length - 4] == 0 && msg[msg.Length - 3] == 1 && msg[msg.Length - 2] == 0 && msg[msg.Length - 1] == 1)
                 {
                     fileWriter.Write(msg, 0, msg.Length - 8);
                     currentCommand = commandType.none;
@@ -121,9 +120,9 @@ class Client
                 }
                 else
                     fileWriter.Write(msg, 0, msg.Length);
-            //}
-            
-
+            }
+            else
+                fileWriter.Write(msg, 0, msg.Length);
         }
             
     }

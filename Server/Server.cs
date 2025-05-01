@@ -59,21 +59,25 @@ public class Server
             if (currentCommand == commandType.write)
             {
             //check for EOF code
-            if (data[data.Length - 8] == 0 && data[data.Length - 7] == 1 && data[data.Length - 6] == 0 && data[data.Length - 5] == 1 &&
-                data[data.Length - 4] == 0 && data[data.Length - 3] == 1 && data[data.Length - 2] == 0 && data[data.Length - 1] == 1)
-            {
-                writeFileStream.Write(data, 0, data.Length - 8);
-                currentCommand = commandType.none;
-                Console.WriteLine("Done Reading");
-                writeFileStream.Close();
-                return;
-                //break;
+                if(data.Length > 7)
+                {
+                    if (data[data.Length - 8] == 0 && data[data.Length - 7] == 1 && data[data.Length - 6] == 0 && data[data.Length - 5] == 1 &&
+                    data[data.Length - 4] == 0 && data[data.Length - 3] == 1 && data[data.Length - 2] == 0 && data[data.Length - 1] == 1)
+                    {
+                        writeFileStream.Write(data, 0, data.Length - 8);
+                        currentCommand = commandType.none;
+                        Console.WriteLine("Done Reading");
+                        writeFileStream.Close();
+                        return;
+                        //break;
+                    }
+                    else
+                        writeFileStream.Write(data, 0, data.Length);
+                }
+                else
+                    writeFileStream.Write(data, 0, data.Length);
             }
-            else
-                writeFileStream.Write(data, 0, data.Length);
-
-
-            }
+            
             return;
         });
 
