@@ -227,7 +227,6 @@ public class Server
                 Byte[] msg = new Byte[bytesReceived];
                 msg = udpClient.Receive(ref temp);
                 Console.WriteLine(msg.Length);
-                Console.WriteLine(System.Text.Encoding.ASCII.GetString(msg, 0, msg.Length));
                 if (msg.Length != 256)
                 {
                     if (msg.Length != 8)
