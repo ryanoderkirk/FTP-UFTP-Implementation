@@ -27,7 +27,7 @@ class Client
         Sender.dataReceived dataCallback = dataMessageHandler;
         Sender.dataReceived controlCallback = controlMessageHandler;
 
-        sender = new Sender("10.185.137.42", 13000, 13001, dataMessageHandler, controlMessageHandler);
+        sender = new Sender("10.185.45.229", 13000, 13001, dataMessageHandler, controlMessageHandler);
         udpClient = new UdpClient();
         sender.listen();
 
@@ -51,7 +51,12 @@ class Client
                 fileWriter = new FileStream(readIn.Replace("read ", ""), FileMode.Create);
             }
 
-            if(readIn.Split(" ")[0] == "readudp")
+            if (readIn.Split(" ")[0] == "write")
+            {
+                currentCommand = commandType.write;
+            }
+
+            if (readIn.Split(" ")[0] == "readudp")
             {
                 currentCommand = commandType.readUDP;
             }
@@ -131,11 +136,65 @@ class Client
 
         string response = System.Text.Encoding.ASCII.GetString(msg, 0, msg.Length);
 
-        if (currentCommand == commandType.writeUDP)
+        if (currentCommand == commandType.write)
         {
             string[] command = response.Split(" ", 2);
             Console.WriteLine(command[0]);
-            Console.WriteLine(command[1]); ;
+            Console.WriteLine(command[1]);
+            if (File.Exists(command[1]))
+            {
+                Console.WriteLine("File Exists!");
+            }
+            if (command[0] == "CTS")
+            {
+                FileStream readFileStream = new FileStream(command[1], FileMode.Open);
+                byte[] buffer = new byte[256];
+
+                long currentPosition = readFileStream.Position;
+                long previousPosition = readFileStream.Position;
+                long bytesRead = 0;
+                while (readFileStream.Read(buffer, 0, buffer.Length) != 0)
+                {
+                    previousPosition = currentPosition;
+                    currentPosition = readFileStream.Position;
+                    bytesRead = currentPosition - previousPosition;
+
+                    if (bytesRead < 256)
+                    {
+                        break;
+                    }
+                    else
+                        sender.sendDataMessage(buffer).Wait();
+                }
+                readFileStream.Close();
+
+                if (bytesRead != 0)
+                {
+                    byte[] lastBuffer = new byte[bytesRead + 8];
+                    for (int i = 0; i < bytesRead; i++)
+                        lastBuffer[i] = buffer[i];
+                    //append  01010101 to end of message to identiy EOF
+                    for (int i = 0; i < 8; i++)
+                    {
+                        lastBuffer[bytesRead + i] = (byte)(i % 2);
+                    }
+                        sender.sendDataMessage(lastBuffer).Wait();
+                }
+                else
+                {
+                    byte[] endOfFileMsg = new byte[8];
+                    endOfFileMsg[0] = 0; endOfFileMsg[1] = 1; endOfFileMsg[2] = 0; endOfFileMsg[3] = 1;
+                    endOfFileMsg[4] = 0; endOfFileMsg[5] = 1; endOfFileMsg[6] = 0; endOfFileMsg[7] = 1;
+                        sender.sendDataMessage(endOfFileMsg).Wait();
+                }
+                currentCommand = commandType.none;
+            }
+        }
+            if (currentCommand == commandType.writeUDP)
+        {
+            string[] command = response.Split(" ", 2);
+            Console.WriteLine(command[0]);
+            Console.WriteLine(command[1]);
             if (File.Exists(command[1]))
             {
                 Console.WriteLine("File Exists!");
@@ -169,4 +228,5 @@ class Client
 
         Console.WriteLine(System.Text.Encoding.ASCII.GetString(msg, 0, msg.Length));
     }
+
 }
