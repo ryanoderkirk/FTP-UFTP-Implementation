@@ -34,7 +34,7 @@ public class Server
         Directory.SetCurrentDirectory(documentsPath);
 
         udpDataLine = new UdpClient(13002);
-        listener = new TCPListener("10.185.137.42", 13000, 13001, 
+        listener = new TCPListener("10.185.45.229", 13000, 13001, 
         // Callback Control
         async (string msg) => {
 
@@ -56,6 +56,24 @@ public class Server
         },
         // Callback Data
         async (byte[] data) => {
+            if (currentCommand == commandType.write)
+            {
+            //check for EOF code
+            if (data[data.Length - 8] == 0 && data[data.Length - 7] == 1 && data[data.Length - 6] == 0 && data[data.Length - 5] == 1 &&
+                data[data.Length - 4] == 0 && data[data.Length - 3] == 1 && data[data.Length - 2] == 0 && data[data.Length - 1] == 1)
+            {
+                writeFileStream.Write(data, 0, data.Length - 8);
+                currentCommand = commandType.none;
+                Console.WriteLine("Done Reading");
+                writeFileStream.Close();
+                return;
+                //break;
+            }
+            else
+                writeFileStream.Write(data, 0, data.Length);
+
+
+            }
             return;
         });
 
@@ -93,7 +111,6 @@ public class Server
                 readFileStream = new FileStream(arguments, FileMode.Open);
                 byte[] buffer = new byte[256];
 
-                
                 long currentPosition = readFileStream.Position;
                 long previousPosition = readFileStream.Position;
                 long bytesRead = 0;
@@ -136,6 +153,17 @@ public class Server
                 currentCommand = commandType.none;
             }
             return "";
+        }
+        else if(command == "write")
+        {
+            currentCommand = commandType.write;
+            writeFileStream = new FileStream("written" + arguments, FileMode.Create);
+            if(writeFileStream.CanWrite)
+            {
+                return "CTS " + arguments;
+            }
+            else
+                Console.WriteLine("FILESTREAM NOT WRITEABLE");
         }
 
         else if (command == "readudp")

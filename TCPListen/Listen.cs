@@ -167,28 +167,31 @@ public class TCPListener
     {
         Console.WriteLine("Connected data!");
 
-        Byte[] bytes = new Byte[256];
         String data = null;
 
 
         // Get a stream object for reading and writing
         dataStream = controlLine.Result.GetStream();
-
-        int i;
-
-        // Loop to receive all the data sent by the client.
-        while ((i = dataStream.Read(bytes, 0, bytes.Length)) != 0)
+        while (true)
         {
-            // Translate data bytes to a ASCII string.
-            data = System.Text.Encoding.ASCII.GetString(bytes, 0, i);
-            Console.WriteLine("Received: {0}", data);
+            if (dataStream.DataAvailable)
+            {
+                long readLength = 256;
+                Byte[] bytes = new Byte[readLength];
 
-            // Process the data sent by the client.
-            readData(bytes);
-
-            //try clearing bytes before reading again
-            bytes = new byte[256];
+                int bytesRead = dataStream.Read(bytes, 0, bytes.Length);
+                if (bytesRead != 256)
+                {
+                    Byte[] resizeData = new Byte[bytesRead];
+                    for (int i = 0; i < bytesRead; i++)
+                        resizeData[i] = bytes[i];
+                    readData(resizeData);
+                }
+                else
+                    readData(bytes);
+            }
         }
+        
     }
 
 }
