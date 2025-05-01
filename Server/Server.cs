@@ -6,14 +6,22 @@ using System.Net.Sockets;
 public class Server
 {
     //maintain state of current command running. If read or write in process, the response to an ACK should be sending another block
-    enum commandType { none, read, write, readUDP};
+    enum commandType { none, read, write, readUDP, writeUDP};
     commandType currentCommand = commandType.none;
     int readBlocks = 0;
     FileStream readFileStream = null;
+    FileStream writeFileStream = null;
 
     TCPListener listener = null;
 
     UdpClient udpDataLine = null;
+
+    public struct writeCallbackObj
+    {
+        public Server svr;
+        public UdpClient udpClient;
+        public FileStream writeStream;
+    }
 
     public async Task run()
     {
@@ -26,7 +34,7 @@ public class Server
         Directory.SetCurrentDirectory(documentsPath);
 
         udpDataLine = new UdpClient(13002);
-        listener = new TCPListener("192.168.1.161", 13000, 13001, 
+        listener = new TCPListener("10.185.137.42", 13000, 13001, 
         // Callback Control
         async (string msg) => {
 
@@ -141,21 +149,43 @@ public class Server
             {
                 byte[] buffer = new byte[256];
                 long currentPosition = readFileStream.Position;
-                int done = readFileStream.Read(buffer, 2, buffer.Length - 2);
+                int done = readFileStream.Read(buffer, 0, buffer.Length);
                 long nextPosition = readFileStream.Position;
 
                 if (done == 0)
                 {
+                    udpDataLine.Send(new byte[8], 8);
                     break;
                 }
-                //assign 2nd byte of array to hold size of the message. Leave first index alone for now
-                buffer[1] = (byte)(nextPosition - currentPosition);
-                Console.WriteLine(buffer);
-                udpDataLine.Send(buffer, buffer.Length);
+                Console.WriteLine(buffer.Length);
+                udpDataLine.Send(buffer, (int)(nextPosition-currentPosition));
             }
             currentCommand = commandType.none;
             readFileStream.Close();
+            udpDataLine.Close();
+            udpDataLine = new UdpClient(13002);
             return "";
+        }
+
+        else if (command == "writeudp")
+        {
+            writeFileStream = new FileStream("test", FileMode.Create);
+
+            writeCallbackObj passedObj = new writeCallbackObj();
+            passedObj.writeStream = writeFileStream;
+            passedObj.udpClient = udpDataLine;
+            passedObj.svr = this;
+
+            IPEndPoint clientIP = null;
+            udpDataLine.Receive(ref clientIP);
+            udpDataLine.Connect(clientIP);
+
+            udpDataLine.BeginReceive(udpWriteCallback,passedObj);
+
+            string messageBack = "CTS ";
+            messageBack += arguments;
+
+            return messageBack;
         }
 
         else if (command == "list")
@@ -182,9 +212,39 @@ public class Server
         return "unknown command";
     }
 
-    public static void udpConnectCallback(IAsyncResult passedObj)
+    public static void udpWriteCallback(IAsyncResult passedObj)
     {
-        UdpClient udpClient = (UdpClient)passedObj.AsyncState;
+        Server svr = ((writeCallbackObj)(passedObj.AsyncState)).svr;
+        FileStream writeStream = ((writeCallbackObj)(passedObj.AsyncState)).writeStream;
+        UdpClient udpClient = ((writeCallbackObj)(passedObj.AsyncState)).udpClient;
+
+        IPEndPoint temp = null;
+        while (true)
+        {
+            int bytesReceived;
+            if ((bytesReceived = udpClient.Available) > 0)
+            {
+                Byte[] msg = new Byte[bytesReceived];
+                msg = udpClient.Receive(ref temp);
+                Console.WriteLine(msg.Length);
+                Console.WriteLine(System.Text.Encoding.ASCII.GetString(msg, 0, msg.Length));
+                if (msg.Length != 256)
+                {
+                    if (msg.Length != 8)
+                    {
+                        writeStream.Write(msg,0,msg.Length);
+                        continue;
+                    }
+                    break;
+                }
+                writeStream.Write(msg, 0, msg.Length);
+            }
+        }
+        svr.currentCommand = commandType.none;
+        writeStream.Close();
+        svr.udpDataLine.Close();
+        svr.udpDataLine = new UdpClient(13002);
+        Console.WriteLine("DONE");
     }
 }
 
