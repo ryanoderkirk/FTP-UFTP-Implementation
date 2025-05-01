@@ -36,6 +36,10 @@ public class TCPListener
         {
             dataStream.Write(data, 0, data.Length);
         }
+        else
+        {
+            Console.WriteLine("NETWORK WRITE FAILED");
+        }
         return 0;
     }
 
