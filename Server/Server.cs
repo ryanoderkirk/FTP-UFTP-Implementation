@@ -34,7 +34,7 @@ public class Server
         Directory.SetCurrentDirectory(documentsPath);
 
         udpDataLine = new UdpClient(13002);
-        listener = new TCPListener("10.185.45.229", 13000, 13001, 
+        listener = new TCPListener("10.185.137.42", 13000, 13001, 
         // Callback Control
         async (string msg) => {
 

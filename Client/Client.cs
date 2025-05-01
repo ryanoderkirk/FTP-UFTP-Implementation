@@ -27,7 +27,7 @@ class Client
         Sender.dataReceived dataCallback = dataMessageHandler;
         Sender.dataReceived controlCallback = controlMessageHandler;
 
-        sender = new Sender("10.185.45.229", 13000, 13001, dataMessageHandler, controlMessageHandler);
+        sender = new Sender("10.185.137.42", 13000, 13001, dataMessageHandler, controlMessageHandler);
         udpClient = new UdpClient();
         sender.listen();
 
@@ -53,6 +53,11 @@ class Client
 
             if (readIn.Split(" ")[0] == "write")
             {
+                if (!File.Exists(readIn.Split(" ", 2)[1]))
+                {
+                    Console.WriteLine("The file you have specified does not exist");
+                    continue;
+                }
                 currentCommand = commandType.write;
             }
 
@@ -63,6 +68,11 @@ class Client
 
             if(readIn.Split(" ")[0] == "writeudp")
             {
+                if (!File.Exists(readIn.Split(" ", 2)[1]))
+                {
+                    Console.WriteLine("The file you have specified does not exist");
+                    continue;
+                }
                 currentCommand = commandType.writeUDP;
                 udpClient.Connect(serverEndPoint);
                 udpClient.Send(new byte[8]);
