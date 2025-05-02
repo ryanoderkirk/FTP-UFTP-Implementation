@@ -27,6 +27,8 @@ public class Sender
         dataClient = new TcpClient(ip, dataPort);
         controlStream = controlClient.GetStream();
         dataStream = dataClient.GetStream();
+        Console.WriteLine("Connected Data!");
+        Console.WriteLine("Connected Control!\n");
         this.dataBlockReceived = dataBlockReceived;
         this.controlBlockReceived = controlBlockReceived;
     }
