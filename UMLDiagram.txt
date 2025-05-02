@@ -1,0 +1,10 @@
+[Server]++->[ServerListener]  
+[Client]++->[ClientListener]  
+
+[ServerListener|listenOnConnection();_dataMessageReceived()_;_controlMessageReceived()_;sendControlMessage();sendDataMessage()]
+
+[ClientListener|listen();_dataMessageReceived()_;_controlMessageReceived()_;sendControlMessage();sendDataMessage()]
+
+[Server|listener:ServerListener|dataMessageReceived();controlMessageReceived()]
+
+[Client|listener:ClientListener|dataMessageReceived();controlMessageReceived()]
