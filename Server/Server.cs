@@ -201,7 +201,8 @@ public class Server
 
         else if (command == "writeudp")
         {
-            writeFileStream = new FileStream("test", FileMode.Create);
+            string outFile = "writeUDP" + arguments;
+            writeFileStream = new FileStream(outFile, FileMode.Create);
 
             writeCallbackObj passedObj = new writeCallbackObj();
             passedObj.writeStream = writeFileStream;
