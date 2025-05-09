@@ -4,9 +4,9 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
-public class TCPListener
+public class ServerListener
 {
-    public TCPListener(string ip, int controlPort, int dataPort, controlReadCallback callbackControl, dataReadCallback callbackData)
+    public ServerListener(string ip, int controlPort, int dataPort, controlReadCallback callbackControl, dataReadCallback callbackData)
     {
         this.ip = ip;
         this.controlPort = controlPort;

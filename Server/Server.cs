@@ -12,7 +12,7 @@ public class Server
     FileStream readFileStream = null;
     FileStream writeFileStream = null;
 
-    TCPListener listener = null;
+    ServerListener listener = null;
 
     UdpClient udpDataLine = null;
 
@@ -34,7 +34,7 @@ public class Server
         Directory.SetCurrentDirectory(documentsPath);
 
         udpDataLine = new UdpClient(13002);
-        listener = new TCPListener("192.168.1.161", 13000, 13001, 
+        listener = new ServerListener("192.168.1.161", 13000, 13001, 
         // Callback Control
         async (string msg) => {
 
