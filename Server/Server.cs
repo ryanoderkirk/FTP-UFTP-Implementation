@@ -7,23 +7,24 @@ public class Server
 {
     //maintain state of current command running. If read or write in process, the response to an ACK should be sending another block
     enum commandType { none, read, write, readUDP, writeUDP};
-    commandType currentCommand = commandType.none;
+    static commandType currentCommand = commandType.none;
+    
     int readBlocks = 0;
-    FileStream readFileStream = null;
-    FileStream writeFileStream = null;
+    
+    static FileStream readFileStream = null;
+    static FileStream writeFileStream = null;
 
-    ServerListener listener = null;
+    static ServerListener listener = null;
 
-    UdpClient udpDataLine = null;
+    static UdpClient udpDataLine = null;
 
     public struct writeCallbackObj
     {
-        public Server svr;
         public UdpClient udpClient;
         public FileStream writeStream;
     }
 
-    public async Task run()
+    static async Task Main(string[] args)
     {
         // sets default directory to /documents/CNProject/Server/
         string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "/CNProject/Server";
@@ -84,7 +85,7 @@ public class Server
         await listener.listen();
     }
 
-    public async Task<string> handleControlLine(string command, string arguments) {
+    static public async Task<string> handleControlLine(string command, string arguments) {
 
         if (command == "cd")
         {
@@ -207,7 +208,6 @@ public class Server
             writeCallbackObj passedObj = new writeCallbackObj();
             passedObj.writeStream = writeFileStream;
             passedObj.udpClient = udpDataLine;
-            passedObj.svr = this;
 
             IPEndPoint clientIP = null;
             udpDataLine.Receive(ref clientIP);
@@ -247,7 +247,6 @@ public class Server
 
     public static void udpWriteCallback(IAsyncResult passedObj)
     {
-        Server svr = ((writeCallbackObj)(passedObj.AsyncState)).svr;
         FileStream writeStream = ((writeCallbackObj)(passedObj.AsyncState)).writeStream;
         UdpClient udpClient = ((writeCallbackObj)(passedObj.AsyncState)).udpClient;
 
@@ -272,10 +271,10 @@ public class Server
                 writeStream.Write(msg, 0, msg.Length);
             }
         }
-        svr.currentCommand = commandType.none;
+        currentCommand = commandType.none;
         writeStream.Close();
-        svr.udpDataLine.Close();
-        svr.udpDataLine = new UdpClient(13002);
+        udpDataLine.Close();
+        udpDataLine = new UdpClient(13002);
         Console.WriteLine("DONE");
     }
 }
