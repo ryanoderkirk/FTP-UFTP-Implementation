@@ -6,13 +6,16 @@ using System.Text;
 
 class Client
 {
+    const string IPADDRESS = "192.168.1.161";
+
+
     enum commandType { none, read, write , readUDP, writeUDP};
     static commandType currentCommand = commandType.none;
     static ClientListener sender = null;
     static FileStream fileWriter = null;
     static FileStream fileReader = null;
     static UdpClient udpClient = null;
-    static IPEndPoint serverEndPoint = new IPEndPoint(IPAddress.Parse("192.168.1.161"), 13002);
+    static IPEndPoint serverEndPoint = new IPEndPoint(IPAddress.Parse(IPADDRESS), 13002);
 
     static int Main(string[] args)
     {
@@ -27,7 +30,7 @@ class Client
         ClientListener.dataReceived dataCallback = dataMessageHandler;
         ClientListener.dataReceived controlCallback = controlMessageHandler;
 
-        sender = new ClientListener("192.168.1.161", 13000, 13001, dataMessageHandler, controlMessageHandler);
+        sender = new ClientListener(IPADDRESS, 13000, 13001, dataMessageHandler, controlMessageHandler);
         udpClient = new UdpClient();
         sender.listen();
 

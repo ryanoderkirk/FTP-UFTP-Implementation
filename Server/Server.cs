@@ -5,6 +5,8 @@ using System.Net.Sockets;
 
 public class Server
 {
+    const string IPADDRESS = "192.168.1.161";
+
     //maintain state of current command running. If read or write in process, the response to an ACK should be sending another block
     enum commandType { none, read, write, readUDP, writeUDP};
     static commandType currentCommand = commandType.none;
@@ -35,7 +37,7 @@ public class Server
         Directory.SetCurrentDirectory(documentsPath);
 
         udpDataLine = new UdpClient(13002);
-        listener = new ServerListener("192.168.1.161", 13000, 13001, 
+        listener = new ServerListener(IPADDRESS, 13000, 13001, 
         // Callback Control
         async (string msg) => {
 
