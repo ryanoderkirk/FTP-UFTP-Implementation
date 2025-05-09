@@ -20,7 +20,6 @@ public class Server
 
     public struct writeCallbackObj
     {
-        public Server svr;
         public UdpClient udpClient;
         public FileStream writeStream;
     }
@@ -209,7 +208,6 @@ public class Server
             writeCallbackObj passedObj = new writeCallbackObj();
             passedObj.writeStream = writeFileStream;
             passedObj.udpClient = udpDataLine;
-            passedObj.svr = this;
 
             IPEndPoint clientIP = null;
             udpDataLine.Receive(ref clientIP);
@@ -249,7 +247,6 @@ public class Server
 
     public static void udpWriteCallback(IAsyncResult passedObj)
     {
-        Server svr = ((writeCallbackObj)(passedObj.AsyncState)).svr;
         FileStream writeStream = ((writeCallbackObj)(passedObj.AsyncState)).writeStream;
         UdpClient udpClient = ((writeCallbackObj)(passedObj.AsyncState)).udpClient;
 
@@ -274,10 +271,10 @@ public class Server
                 writeStream.Write(msg, 0, msg.Length);
             }
         }
-        svr.currentCommand = commandType.none;
+        currentCommand = commandType.none;
         writeStream.Close();
-        svr.udpDataLine.Close();
-        svr.udpDataLine = new UdpClient(13002);
+        udpDataLine.Close();
+        udpDataLine = new UdpClient(13002);
         Console.WriteLine("DONE");
     }
 }
