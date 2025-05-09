@@ -8,11 +8,11 @@ class Client
 {
     enum commandType { none, read, write , readUDP, writeUDP};
     static commandType currentCommand = commandType.none;
-    static Sender sender = null;
+    static ClientListener sender = null;
     static FileStream fileWriter = null;
     static FileStream fileReader = null;
     static UdpClient udpClient = null;
-    static IPEndPoint serverEndPoint = new IPEndPoint(IPAddress.Parse("10.185.137.42"), 13002);
+    static IPEndPoint serverEndPoint = new IPEndPoint(IPAddress.Parse("192.168.1.161"), 13002);
 
     static int Main(string[] args)
     {
@@ -24,10 +24,10 @@ class Client
         }
         Directory.SetCurrentDirectory(documentsPath);
 
-        Sender.dataReceived dataCallback = dataMessageHandler;
-        Sender.dataReceived controlCallback = controlMessageHandler;
+        ClientListener.dataReceived dataCallback = dataMessageHandler;
+        ClientListener.dataReceived controlCallback = controlMessageHandler;
 
-        sender = new Sender("10.185.137.42", 13000, 13001, dataMessageHandler, controlMessageHandler);
+        sender = new ClientListener("192.168.1.161", 13000, 13001, dataMessageHandler, controlMessageHandler);
         udpClient = new UdpClient();
         sender.listen();
 
