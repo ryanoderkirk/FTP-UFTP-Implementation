@@ -6,6 +6,7 @@ using System.Text;
 
 class Client
 {
+    //UPDATE UPADDRESS HERE
     const string IPADDRESS = "192.168.1.161";
 
 

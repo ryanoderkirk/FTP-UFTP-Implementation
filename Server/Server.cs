@@ -5,6 +5,7 @@ using System.Net.Sockets;
 
 public class Server
 {
+    //UPDATE UPADDRESS HERE
     const string IPADDRESS = "192.168.1.161";
 
     //maintain state of current command running. If read or write in process, the response to an ACK should be sending another block
